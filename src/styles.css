@@ -1,0 +1,189 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+img,
+svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+}
+
+.background-image img {
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+}
+
+.app-container {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.header {  
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 70px;
+    background-color: #C8EBFA80;
+    padding-left: 10px;
+    padding-right: 10px;
+    
+}
+
+.app-title {
+    display: flex;
+    gap: 10px;
+}
+
+.logo-container {
+    width: 60px;
+}
+
+.logo-container svg {
+    fill: #B84A5B;
+}
+
+.app-name {
+    display: flex;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+h1 {
+    color: brown;
+    margin-top: 8px;
+}
+
+.search {
+    display: flex;
+    gap: 14px;
+    height: 100%;
+    justify-content: flex-end;
+    padding-top: 20px;
+}
+
+.search label {
+    font-size: 28px;
+    color: brown;
+}
+
+.search input {
+    width: 300px;
+    height: 20px;
+    border: none;
+    border-radius: 20px;
+    padding: 10px;
+    color: brown;
+    font-size: 24px;
+    font-family: Arial, Helvetica, sans-serif
+}
+
+.weather-info {
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+
+    justify-content: flex-start;
+    align-items: center;
+    width: 1100px;
+    min-height: 100%;
+    padding-top: 20px;
+}
+
+.placeholder {
+    font-size: 34px;
+    color: brown;
+}
+
+.default-icon,
+.weather-icon-container {
+    width: 80px;
+}
+
+.weather-today {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 500px;
+}
+
+.city,
+.date-now {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    color: brown;
+}
+
+.city {
+    font-size: 34px;
+}
+
+.weather-icon-container img {
+    width: 100%;
+    mix-blend-mode: multiply;
+    border-radius: 10px;   
+}
+
+.temp {
+    font-size: 36px;
+    color: brown;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-weight: bold;
+}
+
+.summary {
+    font-size: 20px;
+    color: brown;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    text-align: center;
+    margin-top: 8px;
+    font-weight: bold;
+}
+
+.addtl-temp-info,
+.addtl-rain-info {
+    display: flex;
+    gap: 10px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.temp-icon-container,
+.rain-icon-container {
+    width: 60px;
+    height: 30px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.temp-icon-container img,
+.rain-icon-container img {
+    width: 100%;
+    height: 100%;
+}
+
+.descriptive-details,
+.rain-description {
+    color: brown;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    text-align: left;
+}
+
