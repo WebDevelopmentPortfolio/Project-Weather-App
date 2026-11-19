@@ -25,12 +25,14 @@ city.addEventListener("keydown", async (event) => {
             const dateToday = weatherToday.forecast[0].datetime;
             const description = weatherToday.forecast[0].description;
             const humidity = weatherToday.forecast[0].humidity;
+            const heatIndex = weatherToday.forecast[0].feelslikemax;
+            const dew = weatherToday.forecast[0].dew;
             const chanceOfRain = weatherToday.forecast[0].precipprob;
             const rain = weatherToday.forecast[0].precip;
-            const dew = weatherToday.forecast[0].dew;
             
-            displayWeatherToday(weatherToday.city, dateToday, weatherTodayTemp, description, humidity, chanceOfRain, rain, dew);
+            displayWeatherToday(weatherToday.city, dateToday, weatherTodayTemp, description, humidity, heatIndex, dew, chanceOfRain, rain);
             
+            console.clear();
             console.log(weatherToday);
 
         } catch (error) {
@@ -43,7 +45,7 @@ city.addEventListener("keydown", async (event) => {
 });
 
 const getWeather = async (city) => {
-    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}?unitGroup=us&include=current&elements=datetime,temp,humidity,feelslike,windspeed,precipprob,precip,description,dew`;
+    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}?unitGroup=us&include=current&elements=datetime,temp,humidity,feelslike,feelslikemax,windspeed,precipprob,precip,precipcover,description,dew`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -58,9 +60,11 @@ const getWeather = async (city) => {
             temp: day.temp,
             humidity: day.humidity,
             feelslike: day.feelslike,
+            feelslikemax: day.feelslikemax,
             windspeed: day.windspeed,
             precipprob: day.precipprob,
             precip: day.precip,
+            precipcover: day.precipcover,
             description: day.description,
             dew: day.dew
         }
@@ -75,7 +79,7 @@ const getWeather = async (city) => {
     }
 };
 
-function displayWeatherToday(enteredCity, dateToday, tempInF, description, humidity, precipprob, precip, dewInF) {
+function displayWeatherToday(enteredCity, dateToday, tempInF, description, humidity, heatIndex, dewInF, precipprob, precip) {
     weatherInfo.replaceChildren();
 
     const weatherNow = document.createElement("div");
@@ -99,30 +103,14 @@ function displayWeatherToday(enteredCity, dateToday, tempInF, description, humid
 
     const temp = document.createElement("p");
     temp.className = "temp";
-    let inCelsius = convertFahrenheit(tempInF);
+    const inCelsius = convertFahrenheit(tempInF);
     temp.textContent = `${tempInF}°F / ${inCelsius}°C`;
 
     const overall = document.createElement("p");
     overall.className = "summary";
     overall.textContent = `${description}`;
 
-    const addtlTempInfo = document.createElement("div");
-    addtlTempInfo.className = "addtl-temp-info";
-
-    const tempIconContainer = document.createElement("div");
-    tempIconContainer.className = "temp-icon-container";
-
-    const tempIcon = document.createElement("img");
-    tempIcon.src = tempIconImage;
-
-    tempIconContainer.append(tempIcon);
-
-    const addtlTempDetails = document.createElement("p");
-    addtlTempDetails.className = "descriptive-details";
-    inCelsius = convertFahrenheit(dewInF);
-    addtlTempDetails.textContent = `${tempDescription(tempInF)}. Humidity is at ${humidity.toFixed(1)}% while dew point is at ${dewInF}°F / ${inCelsius}°C, which explains why air feels ${dewDescription(dewInF)}.`;
-
-    addtlTempInfo.append(tempIconContainer, addtlTempDetails);
+    const addtlTempInfo = addtlTempDetails(tempInF, heatIndex, humidity, dewInF);
 
     const addtlRainInfo = document.createElement("div");
     addtlRainInfo.className = "addtl-rain-info";
@@ -158,7 +146,16 @@ function convertFahrenheit(temp) {
     return celsisus.toFixed(1);
 }
 
+function weatherIcons(text) {
+    if (text.includes('clear')) return sunnyIcon;
+    if (text.includes('cloudy') && (!text.includes('rain'))) return cloudyIcon;
+    if (text.includes('cloudy') && (text.includes('rain'))) return rainyIcon;
+    if (text.includes('rain') && (!text.includes('cloudy'))) return rainyIcon;
+    if (text.includes('thunderstorm') || (test.includes('storm'))) return stormIcon;
+}
+
 function tempDescription(temp) {
+    /*this is in Fahrenheit*/
     if (temp < 32) return "It's freezing out. Bundle up";
     if (temp < 51) return "It's cold out";
     if (temp < 65) return "It's chilly / cool";
@@ -168,15 +165,17 @@ function tempDescription(temp) {
     return "It's scorching, extremely hot out there"
 }
 
-function rainDescription(precipprob, precip) {
-    if (precip === 0.00) return "No rain today.";
-    if (precip < 0.25) return `A ${precipprob}% chance of rain. When it does rain, it will be light sprinkle or passing shower.`;
-    if (precip < 0.80) return `A ${precipprob}% chance of rain. When it does rain, it will be moderate rain; you may need an umbrella.`;
-    if (precip < 2.00) return `A ${precipprob}% chance of rain. When it does rain, it will be strong downpour; heavy puddles and low visibility.`
-    if (precip >= 2.00) return `A ${precipprob}% chance of rain. When it does rain, it will be intense storm-level rain with flooding risk.`;
+function heatIndexDescription(temp) {
+    /*this is in Celsius*/
+    if (temp < 27) return "This is not hazardous";
+    if (temp < 33) return "Caution is advised; fatigue possible with prolonged exposure and activity";
+    if (temp < 42) return "Extreme caution is advised; heat cramps and heat exhaustion possible";
+    if (temp < 52) return "Danger; heat cramps and heat exhaustion likely; heat stroke probable with continued exposure"
+    if (temp >= 52) return "Extreme danger; heat stroke is imminent";
 }
 
 function dewDescription(dew) {
+    /*this is in Fahrenheit*/
     if (dew < 55) return "dry and crisp";
     if (dew < 65) return "comfortable and pleasant with just a hint of moisture";
     if (dew < 70) return "muggy";
@@ -184,11 +183,39 @@ function dewDescription(dew) {
     return "oppressive and steamy";
 }
 
-function weatherIcons(text) {
-    if (text.includes('clear')) return sunnyIcon;
-    if (text.includes('cloudy')) return cloudyIcon;
-    if (text.includes('rain')) return rainyIcon;
-    if (text.includes('thunderstorm')) return stormIcon;
+function addtlTempDetails(tempInF, heatIndex, humidity, dewInF) {
+    const addtlTempInfo = document.createElement("div");
+    addtlTempInfo.className = "addtl-temp-info";
+
+    const tempIconContainer = document.createElement("div");
+    tempIconContainer.className = "temp-icon-container";
+
+    const tempIcon = document.createElement("img");
+    tempIcon.src = tempIconImage;
+
+    tempIconContainer.append(tempIcon);
+
+    const addtlTempDetails = document.createElement("p");
+    addtlTempDetails.className = "descriptive-details";
+    let inCelsius = convertFahrenheit(heatIndex);
+    addtlTempDetails.textContent = `${tempDescription(tempInF)}. Heat index is at ${heatIndex}°F / ${inCelsius}°C. ${heatIndexDescription(inCelsius)}.`
+    
+    const humidityDetails = document.createElement("p");
+    humidityDetails.className = "humidity-details";
+    inCelsius = convertFahrenheit(dewInF)
+    humidityDetails.textContent = `Humidity is at ${humidity.toFixed(1)}% while dew point is at ${dewInF}°F / ${inCelsius}°C, which explains why air feels ${dewDescription(dewInF)}.`;
+
+    addtlTempInfo.append(tempIconContainer, addtlTempDetails, humidityDetails);
+
+    return addtlTempInfo;
+}
+
+function rainDescription(precipprob, precip) {
+    if (precip === 0.00 || precipprob === 0) return "No rain today.";
+    if (precip < 0.25) return `There's ${precipprob}% chance of rain. When it does rain, it will be light sprinkle or passing shower.`;
+    if (precip < 0.80) return `There's ${precipprob}% chance of rain. When it does rain, it will be moderate rain; you may need an umbrella.`;
+    if (precip < 2.00) return `There's ${precipprob}% chance of rain. When it does rain, it will be strong downpour; heavy puddles and low visibility.`
+    if (precip >= 2.00) return `There's ${precipprob}% chance of rain. When it does rain, it will be intense storm-level rain with flooding risk.`;
 }
 
 city.value = "";

@@ -134,6 +134,7 @@ h1 {
 
 .city {
     font-size: 34px;
+    text-align: center;
 }
 
 .weather-icon-container img {
@@ -181,6 +182,7 @@ h1 {
 }
 
 .descriptive-details,
+.humidity-details,
 .rain-description {
     color: brown;
     font-family: Georgia, 'Times New Roman', Times, serif;
