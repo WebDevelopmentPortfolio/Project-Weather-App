@@ -29,8 +29,9 @@ city.addEventListener("keydown", async (event) => {
             const dew = weatherToday.forecast[0].dew;
             const chanceOfRain = weatherToday.forecast[0].precipprob;
             const rain = weatherToday.forecast[0].precip;
+            const hoursOfRain = weatherToday.forecast[0].precipcover;
             
-            displayWeatherToday(weatherToday.city, dateToday, weatherTodayTemp, description, humidity, heatIndex, dew, chanceOfRain, rain);
+            displayWeatherToday(weatherToday.city, dateToday, weatherTodayTemp, description, humidity, heatIndex, dew, chanceOfRain, rain, hoursOfRain);
             
             console.clear();
             console.log(weatherToday);
@@ -79,7 +80,7 @@ const getWeather = async (city) => {
     }
 };
 
-function displayWeatherToday(enteredCity, dateToday, tempInF, description, humidity, heatIndex, dewInF, precipprob, precip) {
+function displayWeatherToday(enteredCity, dateToday, tempInF, description, humidity, heatIndex, dewInF, precipprob, precip, precipcover) {
     weatherInfo.replaceChildren();
 
     const weatherNow = document.createElement("div");
@@ -112,22 +113,7 @@ function displayWeatherToday(enteredCity, dateToday, tempInF, description, humid
 
     const addtlTempInfo = addtlTempDetails(tempInF, heatIndex, humidity, dewInF);
 
-    const addtlRainInfo = document.createElement("div");
-    addtlRainInfo.className = "addtl-rain-info";
-
-    const rainIconContainer = document.createElement("div");
-    rainIconContainer.className = "rain-icon-container";
-
-    const rainIcon = document.createElement("img");
-    rainIcon.src = umbrellaIconImage;
-
-    rainIconContainer.append(rainIcon);
-
-    const rainDetails = document.createElement("p");
-    rainDetails.className = "rain-description";
-    rainDetails.textContent = rainDescription(precipprob, precip);
-
-    addtlRainInfo.append(rainIconContainer, rainDetails);
+    const addtlRainInfo = addtlRainDetails(precipprob, precip, precipcover);
 
     weatherNow.append(city, dateNow, weatherIconContainer, temp, overall, addtlTempInfo, addtlRainInfo);
     weatherInfo.append(weatherNow);
@@ -210,12 +196,40 @@ function addtlTempDetails(tempInF, heatIndex, humidity, dewInF) {
     return addtlTempInfo;
 }
 
-function rainDescription(precipprob, precip) {
+function rainDescription(precipprob, precip, precipcover) {
     if (precip === 0.00 || precipprob === 0) return "No rain today.";
-    if (precip < 0.25) return `There's ${precipprob}% chance of rain. When it does rain, it will be light sprinkle or passing shower.`;
-    if (precip < 0.80) return `There's ${precipprob}% chance of rain. When it does rain, it will be moderate rain; you may need an umbrella.`;
+    if (precip < 0.25) return `There's ${precipprob}% chance of rain. When it does rain, it will be light but ${moreRainInfo(precipcover)}.`;
+    if (precip < 0.80) return `There's ${precipprob}% chance of rain. When it does rain, it will be moderate rain - ${moreRainInfo(precipcover)}; you may need an umbrella.`;
     if (precip < 2.00) return `There's ${precipprob}% chance of rain. When it does rain, it will be strong downpour; heavy puddles and low visibility.`
     if (precip >= 2.00) return `There's ${precipprob}% chance of rain. When it does rain, it will be intense storm-level rain with flooding risk.`;
+}
+
+function moreRainInfo(precipcover) {
+    if (precipcover <= 12.50) return "brief, isolated rain showers - quick then clearing";
+    if (precipcover <= 25.00) return "intermittent rain showers across several hours of the day";
+    if (precipcover < 50.00) return "frequent, recurring rain showers throughout much of the day"; 
+    if (precipcover >= 50.00) return "widespread, prolonged rain for much of the day"
+}
+
+function addtlRainDetails(precipprob, precip, precipcover) {
+    const addtlRainInfo = document.createElement("div");
+    addtlRainInfo.className = "addtl-rain-info";
+
+    const rainIconContainer = document.createElement("div");
+    rainIconContainer.className = "rain-icon-container";
+
+    const rainIcon = document.createElement("img");
+    rainIcon.src = umbrellaIconImage;
+
+    rainIconContainer.append(rainIcon);
+
+    const rainDetails = document.createElement("p");
+    rainDetails.className = "rain-description";
+    rainDetails.textContent = rainDescription(precipprob, precip, precipcover);
+
+    addtlRainInfo.append(rainIconContainer, rainDetails);
+
+    return addtlRainInfo;
 }
 
 city.value = "";

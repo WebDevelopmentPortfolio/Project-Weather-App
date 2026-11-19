@@ -162,7 +162,7 @@ h1 {
 .addtl-temp-info,
 .addtl-rain-info {
     display: flex;
-    gap: 10px;
+    gap: 20px;
     padding-top: 8px;
     padding-bottom: 8px;
 }
