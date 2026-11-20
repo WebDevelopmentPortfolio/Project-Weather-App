@@ -19,8 +19,9 @@ body {
     min-height: 100vh;
     margin: 0;
     padding: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    overflow: hidden;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    color: brown;
+    /*overflow: hidden;*/
 }
 
 .background-image img {
@@ -65,11 +66,9 @@ body {
 
 .app-name {
     display: flex;
-    font-family: Georgia, 'Times New Roman', Times, serif;
 }
 
 h1 {
-    color: brown;
     margin-top: 8px;
 }
 
@@ -83,7 +82,6 @@ h1 {
 
 .search label {
     font-size: 28px;
-    color: brown;
 }
 
 .search input {
@@ -94,7 +92,6 @@ h1 {
     padding: 10px;
     color: brown;
     font-size: 24px;
-    font-family: Arial, Helvetica, sans-serif
 }
 
 .weather-info {
@@ -109,9 +106,19 @@ h1 {
     padding-top: 20px;
 }
 
+.hidden {
+    display: none;
+}
+
+.default-items {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 .placeholder {
     font-size: 34px;
-    color: brown;
 }
 
 .default-icon,
@@ -123,17 +130,17 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 500px;
+    width: 600px;
 }
 
-.city,
+/*.city,
 .date-now {
     font-family: Georgia, 'Times New Roman', Times, serif;
     color: brown;
-}
+}*/
 
 .city {
-    font-size: 34px;
+    font-size: 28px;
     text-align: center;
 }
 
@@ -145,15 +152,11 @@ h1 {
 
 .temp {
     font-size: 36px;
-    color: brown;
-    font-family: Georgia, 'Times New Roman', Times, serif;
     font-weight: bold;
 }
 
 .summary {
     font-size: 20px;
-    color: brown;
-    font-family: Georgia, 'Times New Roman', Times, serif;
     text-align: center;
     margin-top: 8px;
     font-weight: bold;
@@ -184,8 +187,47 @@ h1 {
 .descriptive-details,
 .humidity-details,
 .rain-description {
-    color: brown;
-    font-family: Georgia, 'Times New Roman', Times, serif;
     text-align: left;
+}
+
+.links {
+    display: flex;
+    gap: 40px;
+}
+
+.forecast-link:not(.hidden),
+.hide-forecast:not(.hidden) {   
+    padding-top: 20px;
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.forecasts:not(.hidden) {
+    display: flex;
+    gap: 10px;
+    padding-top: 20px;
+}
+
+.day-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid lightgray;
+    border-radius: 20px;
+    padding: 8px;
+    background-color: lightgray;
+    gap: 8px;
+}
+
+.forecast-icon-container {
+    width: 60px;
+}
+
+.forecast-date {
+    font-size: 20px;
+    color: brown;
+    font-weight: bold;
 }
 
