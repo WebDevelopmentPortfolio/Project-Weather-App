@@ -7,9 +7,6 @@
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-    <div class="background-image" >
-        <img src="./images/davies-designs-studio-G-6kwVnClsE-unsplash.jpg">
-    </div>
     <div class="app-container">
         <div class="header">
             <div class="app-title">
@@ -21,8 +18,10 @@
                 </div>
             </div>
             <div class="search">
-                <label for="search-city">Search a City</label>
-                <input type="text" id="search-city" name="search_city">
+                <div class="search-icon">
+                    <img src="./images/find-icon.png">
+                </div>
+                <input type="text" id="search-city" name="search_city" placeholder="Seach a City...">
             </div>
         </div>
         <div class="weather-info">
@@ -38,6 +37,12 @@
                 <div class="hide-forecast hidden">Hide Forecasts</div>
             </div>
             <div class="forecasts hidden"></div>
+        </div>
+        <div class="attribution">Background by <a href="https://unsplash.com/@davies_designs?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Davies Designs Studio</a> on <a href="https://unsplash.com/photos/white-and-grey-clouds-G-6kwVnClsE?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></div>
+        <div class="footer">
+            <div>Data are sourced from <a href="https://www.visualcrossing.com/weather-api/">Visual Crossing API</a></div>
+            <div>Logo icon is from pictogrammers.com while icons are from uxwing.com</div>
+            <div>TOP project by Cherry © 2026</div>
         </div>
     </div>
 </body>

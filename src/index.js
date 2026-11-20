@@ -94,10 +94,7 @@ const getWeather = async (city) => {
 };
 
 function displayWeatherToday(enteredCity, dateToday, tempInF, description, humidity, heatIndex, dewInF, precipprob, precip, precipcover, windspeed, windgust) {
-     weatherInfoToday.replaceChildren();
-
-    const weatherNow = document.createElement("div");
-    weatherNow.className = "weather-today";
+    weatherInfoToday.replaceChildren();
 
     const city = document.createElement("p");
     city.className = "city";
@@ -128,8 +125,7 @@ function displayWeatherToday(enteredCity, dateToday, tempInF, description, humid
 
     const addtlRainInfo = addtlRainDetails(precipprob, precip, precipcover, windspeed, windgust);
 
-    weatherNow.append(city, dateNow, weatherIconContainer, temp, overall, addtlTempInfo, addtlRainInfo);
-    weatherInfoToday.append(weatherNow);
+    weatherInfoToday.append(city, dateNow, weatherIconContainer, temp, overall, addtlTempInfo, addtlRainInfo);
 }
 
 async function displayWeatherInfo(enteredCity) {
