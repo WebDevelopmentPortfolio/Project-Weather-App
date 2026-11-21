@@ -14,6 +14,7 @@ Features:
 6. Same for rain descriptions. I use the precipitation numbers from the API and searched through google for loose category range descriptions. All these of course can be read in the code.
 
 Screenshots:
+
 <img src="image.png" height="300">
 
 <img src="image-1.png" height="300">
