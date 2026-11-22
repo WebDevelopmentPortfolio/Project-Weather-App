@@ -56,8 +56,8 @@ city.addEventListener("keydown", (event) => {
     }
 });
 
-const getWeather = async (city) => {
-    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}?unitGroup=us&include=current&elements=datetime,temp,humidity,feelslike,feelslikemax,windspeed,windgust,precipprob,precip,precipcover,conditions,description,dew`;
+const getWeatherToday = async (city) => {
+    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/today?unitGroup=us&include=day&elements=datetime,temp,humidity,feelslike,feelslikemax,windspeed,windgust,precipprob,precip,precipcover,conditions,description,dew`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -87,9 +87,6 @@ const getWeather = async (city) => {
     return {
         city: data.resolvedAddress,
         forecast: dailyForecasts,
-        getDay(index) {
-            return this.forecast[index]
-        }
     }
 };
 
@@ -129,7 +126,7 @@ function displayWeatherToday(enteredCity, dateToday, tempInF, description, humid
 }
 
 async function displayWeatherInfo(enteredCity) {
-    const weatherToday = await getWeather(enteredCity);
+    const weatherToday = await getWeatherToday(enteredCity);
     const weatherTodayTemp = weatherToday.forecast[0].temp;
     const dateToday = weatherToday.forecast[0].datetime;
     const description = weatherToday.forecast[0].description;
@@ -165,7 +162,7 @@ function convertFahrenheit(temp) {
 function weatherIcons(text) {
     if (text.includes('clear') && (!text.includes('cloudy')) && (!text.includes('rain'))) return sunnyIcon;
     if (text.includes('cloudy') && (!text.includes('rain')) && (!text.includes('storm'))) return cloudyIcon;
-    if ((text.includes('cloudy') && (text.includes('rain'))) || (text.includes('storm'))) return rainyIcon;
+    if (text.includes('cloudy') && text.includes('rain') && (!text.includes('storm'))) return rainyIcon;
     if (text.includes('rain') && (!text.includes('cloudy'))) return rainyIcon;
     if (text.includes('thunderstorm') || (text.includes('storm'))) return stormIcon;
 }
@@ -266,24 +263,24 @@ function addtlRainDetails(precipprob, precip, precipcover, windspeed, windgust) 
 const forecasts = (function() {
     const displayEachForecast = [
         {
-            text: "Show The Next 2 Days",
-            display: () => displayForecast(1),
+            display: () => displayForecast("Show Tomorrow's Forecast", 1),
+            text: "Show The Next 2 Days"
         },
-        {
+        {      
+            display: () => displayForecast("Show The Next 2 Days", 2),
             text: "Show The Next 3 Days",
-            display: () => displayForecast(2),
         },
-        {
+        { 
+            display: () => displayForecast("Show The Next 3 Days", 3),
             text: "Show The Next 4 Days",
-            display: () => displayForecast(3),
         },
-        {
+        { 
+            display: () => displayForecast("Show The Next 4 Days", 4),
             text: "Show The Next 5 Days",
-            display: () => displayForecast(4),
         },
-        {
+        { 
+            display: () => displayForecast("Show The Next 5 Days", 5),
             text: "Show Tomorrow's Forecast",
-            display: () => displayForecast(5),
         }
     ]
 
@@ -316,9 +313,48 @@ forecastLink.addEventListener('click', async function(event) {
     hideForecast.classList.remove('hidden');
 });
 
-async function displayForecast(numberOfDays) {
+const getFutureWeather = async(text, city) => {
+    let url = "";
+    if (text === "Show Tomorrow's Forecast") {
+        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next1days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
+    } else if (text === "Show The Next 2 Days") {
+        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next2days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
+    } else if (text === "Show The Next 3 Days") {
+        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next3days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
+    } else if (text === "Show The Next 4 Days") {
+        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next4days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
+    } else if (text === "Show The Next 5 Days") {
+        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next5days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
+    }
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+        throw new Error(`Weather API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    const dailyForecasts = data.days.map((day) => {
+        return {
+            datetime: day.datetime,
+            temp: day.temp,
+            feelslikemax: day.feelslikemax,
+            precipprob: day.precipprob,
+            conditions: day.conditions,
+            description: day.description,
+        }
+    });
+
+    return {
+        city: data.resolvedAddress,
+        forecast: dailyForecasts
+    }
+}
+
+async function displayForecast(text, numberOfDays) {
     const city = savedCity.getCity();
-    const weather = await getWeather(city);
+    const weather = await getFutureWeather(text, city);
 
     for (let i = 1; i <= numberOfDays; i++) {
         const dayContainer = document.createElement("div");
@@ -357,6 +393,8 @@ async function displayForecast(numberOfDays) {
         dayContainer.append(forecastDateText, weatherIconContainer, tempText, forecastDesc, heatIndexText, chanceOfRainText);
 
         forecastsContainer.append(dayContainer);
+
+        console.log(weather);
     }
 }
 
