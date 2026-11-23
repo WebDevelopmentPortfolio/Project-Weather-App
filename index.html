@@ -32,9 +32,19 @@
                 </div>
             </div>
             <div class="weather-info-today"></div>
-            <div class="links">
-                <div class="forecast-link forecast-tomorrow hidden" data-index="0">Show Tomorrow's Forecast</div>
-                <div class="hide-forecast hidden">Hide Forecasts</div>
+            <div class="select-forecasts-container hidden">
+                <div class="select-forecasts">
+                    <label for="show-forecast">Show</label>
+                    <select id="show-forecast">
+                        <option value="" selected>--Select Forecast--</option>
+                        <option value="tomorrow">Tomorrow's Forecast</option>
+                        <option value="next2days">The next 2 Days</option>
+                        <option value="next5days">The next 5 Days</option>
+                        <option value="next7days">The next 7 Days</option>
+                        <option value="next10days">The next 10 Days</option>
+                    </select>
+                </div>
+                <div class="hide-forecast hidden">Hide Forecasts</div>      
             </div>
             <div class="forecasts hidden"></div>
         </div>    
