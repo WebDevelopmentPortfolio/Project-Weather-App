@@ -10,7 +10,8 @@ import umbrellaIconImage from "./images/umbrella-color-icon.png";
 const defaultItems = document.querySelector(".default-items");
 const city = document.getElementById("search-city");
 const weatherInfoToday = document.querySelector(".weather-info-today");
-const forecastLink = document.querySelector(".forecast-link");
+const selectForecast = document.querySelector(".select-forecasts-container");
+const showForecast = document.getElementById("show-forecast");
 const hideForecast = document.querySelector(".hide-forecast");
 const forecastsContainer = document.querySelector(".forecasts");
 
@@ -48,16 +49,16 @@ city.addEventListener("keydown", (event) => {
 
         city.value = "";
 
-        forecastLink.classList.remove('hidden');
         forecastsContainer.classList.add('hidden');
         forecastsContainer.replaceChildren();
-        forecastLink.textContent = "Show Tomorrow's Forecast";
-        forecastLink.dataset.index = "0";
+        hideForecast.classList.add('hidden');
+        selectForecast.classList.remove('hidden');
+        showForecast.value = "";
     }
 });
 
 const getWeatherToday = async (city) => {
-    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/today?unitGroup=us&include=day&elements=datetime,temp,humidity,feelslike,feelslikemax,windspeed,windgust,precipprob,precip,precipcover,conditions,description,dew`;
+    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/today?unitGroup=us&include=day&elements=datetime,temp,humidity,feelslikemax,windspeed,windgust,precipprob,precip,precipcover,conditions,description,dew,preciptype,snow,snowdepth`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -71,7 +72,6 @@ const getWeatherToday = async (city) => {
             datetime: day.datetime,
             temp: day.temp,
             humidity: day.humidity,
-            feelslike: day.feelslike,
             feelslikemax: day.feelslikemax,
             windspeed: day.windspeed,
             windgust: day.windgust,
@@ -80,7 +80,10 @@ const getWeatherToday = async (city) => {
             precipcover: day.precipcover,
             conditions: day.conditions,
             description: day.description,
-            dew: day.dew
+            dew: day.dew,
+            preciptype: day.preciptype,
+            snow: day.snow,
+            snowdepth: day.snowdepth
         }
     });
 
@@ -140,10 +143,6 @@ async function displayWeatherInfo(enteredCity) {
     const windGust = weatherToday.forecast[0].windgust;
     
     displayWeatherToday(weatherToday.city, dateToday, weatherTodayTemp, description, humidity, heatIndex, dew, chanceOfRain, rain, hoursOfRain, windSpeed, windGust);
-    
-    console.clear();
-    console.log(weatherToday);
-    
 }
 
 function formatDate(date) {
@@ -185,7 +184,6 @@ function heatIndexDescription(temp, tempInF) {
     if (temp < 42.0) return "Extreme caution is advised; heat cramps and heat exhaustion possible.";
     if (temp < 52.0) return "Danger; heat cramps and heat exhaustion likely; heat stroke probable with continued exposure."
     if (temp >= 52.0) return "Extreme danger; heat stroke is imminent.";
-    console.log(tempInF);
 }
 
 function dewDescription(dew) {
@@ -260,73 +258,47 @@ function addtlRainDetails(precipprob, precip, precipcover, windspeed, windgust) 
     return addtlRainInfo;
 }
 
-const forecasts = (function() {
-    const displayEachForecast = [
-        {
-            display: () => displayForecast("Show Tomorrow's Forecast", 1),
-            text: "Show The Next 2 Days"
-        },
-        {      
-            display: () => displayForecast("Show The Next 2 Days", 2),
-            text: "Show The Next 3 Days",
-        },
-        { 
-            display: () => displayForecast("Show The Next 3 Days", 3),
-            text: "Show The Next 4 Days",
-        },
-        { 
-            display: () => displayForecast("Show The Next 4 Days", 4),
-            text: "Show The Next 5 Days",
-        },
-        { 
-            display: () => displayForecast("Show The Next 5 Days", 5),
-            text: "Show Tomorrow's Forecast",
-        }
-    ]
-
-    return {
-        getLength: function() {
-            return displayEachForecast.length
-        },
-        getLinkText: function(index) {
-            return displayEachForecast[index].text
-        },
-        getForecast: function(index) {
-            return displayEachForecast[index].display()
-        }
-    }
-})();
-
-forecastLink.addEventListener('click', async function(event) {
+showForecast.addEventListener('change', async function(event) {
     event.preventDefault();
     forecastsContainer.classList.remove('hidden');
     forecastsContainer.replaceChildren();
-
-    let currentIndex = Number(this.dataset.index);    
-    
-    forecastLink.textContent = forecasts.getLinkText(currentIndex);
-    await forecasts.getForecast(currentIndex);
-
-    const length = forecasts.getLength();
-    this.dataset.index = (currentIndex + 1) % length;
-
     hideForecast.classList.remove('hidden');
+
+    let selectedValue = showForecast.value;
+    
+    if (selectedValue !== "") {
+        if (selectedValue === "tomorrow") {
+            await displayForecast("next1days", 1);
+        } 
+        
+        if (selectedValue === "next2days") {
+            await displayForecast(selectedValue, 2);
+        }
+
+        if (selectedValue === "next5days") {
+            await displayForecast(selectedValue, 5);
+        }
+
+        if (selectedValue === "next7days") {
+            await displayForecast(selectedValue, 7);
+        }
+
+        if (selectedValue === "next10days") {
+            await displayForecast(selectedValue, 10);
+        }
+        
+    }
 });
 
-const getFutureWeather = async(text, city) => {
+const getFutureWeather = async(selectedValue, city) => {
     let url = "";
-    if (text === "Show Tomorrow's Forecast") {
-        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next1days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
-    } else if (text === "Show The Next 2 Days") {
-        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next2days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
-    } else if (text === "Show The Next 3 Days") {
-        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next3days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
-    } else if (text === "Show The Next 4 Days") {
-        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next4days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
-    } else if (text === "Show The Next 5 Days") {
-        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next5days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
-    }
 
+    if (selectedValue === "tomorrow")  {
+        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next1days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
+    } else {
+        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/${selectedValue}?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
+    }
+    
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -352,9 +324,9 @@ const getFutureWeather = async(text, city) => {
     }
 }
 
-async function displayForecast(text, numberOfDays) {
+async function displayForecast(selectedValue, numberOfDays) {
     const city = savedCity.getCity();
-    const weather = await getFutureWeather(text, city);
+    const weather = await getFutureWeather(selectedValue, city);
 
     for (let i = 1; i <= numberOfDays; i++) {
         const dayContainer = document.createElement("div");
@@ -393,8 +365,6 @@ async function displayForecast(text, numberOfDays) {
         dayContainer.append(forecastDateText, weatherIconContainer, tempText, forecastDesc, heatIndexText, chanceOfRainText);
 
         forecastsContainer.append(dayContainer);
-
-        console.log(weather);
     }
 }
 
@@ -427,8 +397,7 @@ hideForecast.addEventListener('click', (event) => {
     event.preventDefault();
     forecastsContainer.classList.add('hidden');
     forecastsContainer.replaceChildren();
-    forecastLink.textContent = "Show Tomorrow's Forecast";
-    forecastLink.dataset.index = "0";
+    showForecast.value = "";
 });
 
 city.value = "";

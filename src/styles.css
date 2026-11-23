@@ -37,6 +37,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    align-items: center;
     overflow-x: hidden;
 }
 
@@ -52,7 +53,6 @@ body {
 
 .app-title {
     display: flex;
-    /*gap: 10px;*/
     gap: .625rem;
     padding-left: 10px;
     flex-wrap: wrap;
@@ -162,7 +162,6 @@ h1 {
 
 .weather-icon-container img {
     width: 100%;
-    mix-blend-mode: multiply;
     border-radius: 10px;   
 }
 
@@ -207,18 +206,50 @@ h1 {
     text-align: left;
 }
 
-.links {
+.select-forecasts-container:not(.hidden) {
     display: flex;
-    gap: 40px;
-    flex-wrap: wrap;
+    padding-top: 20px;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, Helvetica, sans-serif;
+    max-width: 600px;
+    width: 100%;
 }
 
-.forecast-link:not(.hidden),
+.select-forecasts {
+    display: flex;
+    gap: 20px;
+    max-width: 400px;
+    width: 100%;
+    padding-left: 10px;
+}
+
+.select-forecasts label {
+    display: flex;
+    align-items: center;
+}
+
+.select-forecasts select {
+    max-width: 300px;
+    width: 100%;
+    max-height: 30px;
+    height: auto;
+    background: transparent;
+    border: 1px solid midnightblue;
+    border-radius: 20px;
+    box-sizing: border-box;
+    padding: 6px;
+    color: midnightblue;
+    font-size: .875rem;
+}
+
 .hide-forecast:not(.hidden) {   
-    padding-top: 20px;
     text-decoration: underline;
     cursor: pointer;
     font-family: Arial, Helvetica, sans-serif;
+    max-width: 120px;
+    width: 100%;
+    padding-left: 10px;
 }
 
 .forecasts:not(.hidden) {
@@ -243,10 +274,11 @@ h1 {
     padding: 8px;
     background-color: lightgray;
     background-color: transparent;
-    gap: 8px;
+    gap: 4px;
     max-width: 200px;
     width: 100%;
     max-height: 230px;
+    height: auto;
 }
 
 .forecast-icon-container {
@@ -264,6 +296,7 @@ h1 {
     flex-direction: column;
     margin-top: auto;
     gap: 4px;
+    width: 100%;
 }
 
 .attribution {
