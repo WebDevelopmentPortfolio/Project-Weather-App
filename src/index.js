@@ -8,6 +8,7 @@ import tempIconImage from "./images/medium-temperature-icon.png";
 import umbrellaIconImage from "./images/umbrella-color-icon.png";
 
 const defaultItems = document.querySelector(".default-items");
+const formSearch = document.getElementById("search");
 const city = document.getElementById("search-city");
 const weatherInfoToday = document.querySelector(".weather-info-today");
 const selectForecast = document.querySelector(".select-forecasts-container");
@@ -28,33 +29,31 @@ const savedCity = (function() {
     }
 })();
 
-city.addEventListener("keydown", (event) => {
-    const key = event.key;
-    if (key === "Enter") {
-        event.preventDefault();
+formSearch.addEventListener('submit', async function(event) {
+    event.preventDefault();
 
-        defaultItems.replaceChildren();
+    defaultItems.replaceChildren();
         
-        savedCity.saveEnteredCity(city.value);
-        const enteredCity = savedCity.getCity();
-        
-        if (!enteredCity) return;
-        
-        try {
-            displayWeatherInfo(enteredCity);
-
-        } catch (error) {
-            console.error('Failed to get weather:', error.message);
-        }
-
-        city.value = "";
-
-        forecastsContainer.classList.add('hidden');
-        forecastsContainer.replaceChildren();
-        hideForecast.classList.add('hidden');
-        selectForecast.classList.remove('hidden');
-        showForecast.value = "";
+    savedCity.saveEnteredCity(city.value);
+    const enteredCity = savedCity.getCity();
+    
+    if (!enteredCity) return;
+    
+    try {
+        await displayWeatherInfo(enteredCity);
+    } catch (error) {
+        selectForecast.classList.add('hidden'); /*not working*/
+        console.error('Failed to get weather:', error.message);
     }
+
+    city.value = "";
+
+    forecastsContainer.classList.add('hidden');
+    forecastsContainer.replaceChildren();
+    hideForecast.classList.add('hidden');
+    selectForecast.classList.remove('hidden');
+    showForecast.value = "";
+
 });
 
 const getWeatherToday = async (city) => {
@@ -62,7 +61,10 @@ const getWeatherToday = async (city) => {
     const response = await fetch(url);
 
     if (!response.ok) {
-        throw new Error(`Weather API error: ${response.status}`);
+        weatherInfoToday.replaceChildren();
+        selectForecast.classList.add('hidden'); /*not working*/
+        /*throw new Error(`Weather API error: ${response.status}`);*/ /*I don't want users to see any error thrown by API*/
+        return; /*without this, it still returns an error*/
     }
 
     const data = await response.json();
@@ -130,6 +132,12 @@ function displayWeatherToday(enteredCity, dateToday, tempInF, description, humid
 
 async function displayWeatherInfo(enteredCity) {
     const weatherToday = await getWeatherToday(enteredCity);
+    
+    if (!weatherToday) {
+        selectForecast.classList.add('hidden'); /*not working*/
+        return; /*I don't want users to see any error thrown by API*/
+    }
+
     const weatherTodayTemp = weatherToday.forecast[0].temp;
     const dateToday = weatherToday.forecast[0].datetime;
     const description = weatherToday.forecast[0].description;
@@ -143,6 +151,9 @@ async function displayWeatherInfo(enteredCity) {
     const windGust = weatherToday.forecast[0].windgust;
     
     displayWeatherToday(weatherToday.city, dateToday, weatherTodayTemp, description, humidity, heatIndex, dew, chanceOfRain, rain, hoursOfRain, windSpeed, windGust);
+    
+    console.clear();
+    console.log(weatherToday);
 }
 
 function formatDate(date) {
