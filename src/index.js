@@ -6,6 +6,7 @@ import rainyIcon from "./images/day-cloud-rain-color-icon.png";
 import stormIcon from "./images/day-cloud-rain-lightning-color-icon.png";
 import tempIconImage from "./images/medium-temperature-icon.png";
 import umbrellaIconImage from "./images/umbrella-color-icon.png";
+import snowHatIcon from "./images/christmas-santa-cap-color-icon.png";
 
 const defaultItems = document.querySelector(".default-items");
 const formSearch = document.getElementById("search");
@@ -95,7 +96,7 @@ const getWeatherToday = async (city) => {
     }
 };
 
-function displayWeatherToday(enteredCity, dateToday, tempInF, description, humidity, heatIndex, dewInF, precipprob, precip, precipcover, windspeed, windgust) {
+function displayWeatherToday(enteredCity, dateToday, tempInF, description, humidity, heatIndex, dewInF, preciptype, precipprob, precip, precipcover, snow, snowdepth) {
     weatherInfoToday.replaceChildren();
 
     const city = document.createElement("p");
@@ -125,9 +126,11 @@ function displayWeatherToday(enteredCity, dateToday, tempInF, description, humid
 
     const addtlTempInfo = addtlTempDetails(heatIndex, humidity, dewInF);
 
-    const addtlRainInfo = addtlRainDetails(precipprob, precip, precipcover, windspeed, windgust);
+    const addtlRainInfo = addtlRainDetails(preciptype, precipprob, precip, precipcover);
 
-    weatherInfoToday.append(city, dateNow, weatherIconContainer, temp, overall, addtlTempInfo, addtlRainInfo);
+    const snowInfo = showSnowDetails(preciptype, precipprob, snow, snowdepth);
+
+    weatherInfoToday.append(city, dateNow, weatherIconContainer, temp, overall, addtlTempInfo, addtlRainInfo, snowInfo);
 }
 
 async function displayWeatherInfo(enteredCity) {
@@ -144,13 +147,16 @@ async function displayWeatherInfo(enteredCity) {
     const humidity = weatherToday.forecast[0].humidity;
     const heatIndex = weatherToday.forecast[0].feelslikemax;
     const dew = weatherToday.forecast[0].dew;
+    const preciptype = weatherToday.forecast[0].preciptype;
     const chanceOfRain = weatherToday.forecast[0].precipprob;
     const rain = weatherToday.forecast[0].precip;
     const hoursOfRain = weatherToday.forecast[0].precipcover;
+    const snow = weatherToday.forecast[0].snow;
+    const snowdepth = weatherToday.forecast[0].snowdepth;
     const windSpeed = weatherToday.forecast[0].windspeed;
     const windGust = weatherToday.forecast[0].windgust;
     
-    displayWeatherToday(weatherToday.city, dateToday, weatherTodayTemp, description, humidity, heatIndex, dew, chanceOfRain, rain, hoursOfRain, windSpeed, windGust);
+    displayWeatherToday(weatherToday.city, dateToday, weatherTodayTemp, description, humidity, heatIndex, dew, preciptype, chanceOfRain, rain, hoursOfRain, snow, snowdepth);
     
     console.clear();
     console.log(weatherToday);
@@ -233,12 +239,32 @@ function addtlTempDetails(heatIndex, humidity, dewInF) {
     return addtlTempInfo;
 }
 
-function rainDescription(precipprob, precip, precipcover, windspeed, windgust) {
+function completeRainDescription(preciptype, precipprob, precip, precipcover) {
+    const precipType = preciptype || [];
+    let rainDetails = rainDescription('Chance of rain', precipprob, precip, precipcover);
     if (precip === 0.00 || precipprob === 0) return "No rain today.";
-    if (precip < 0.25) return `There's ${precipprob}% chance of rain. When it does rain, it will be light but ${moreRainInfo(precipcover)}. Wind speed is at ${windspeed} miles per hour with gustiness of ${windgust} miles per hour.`;
-    if (precip < 0.80) return `There's ${precipprob}% chance of rain. When it does rain, it will be moderate downpour - ${moreRainInfo(precipcover)}; you may need an umbrella. Wind speed is at ${windspeed} miles per hour with gustiness of ${windgust} miles per hour.`;
-    if (precip < 2.00) return `There's ${precipprob}% chance of rain. When it does rain, it will be strong downpour; heavy puddles and low visibility. Wind speed is at ${windspeed} miles per hour with gustiness of ${windgust} miles per hour.`
-    if (precip >= 2.00) return `There's ${precipprob}% chance of rain. When it does rain, it will be intense storm-level rain with flooding risk. Wind speed is at ${windspeed} miles per hour with gustiness of ${windgust} miles per hour.`;
+    if (precipType.length === 1 && preciptype.includes('rain')) {
+        return rainDetails;
+    }
+
+    if (precipType.length > 0 && (preciptype.includes('rain') && preciptype.includes('snow'))) {
+        rainDetails = rainDescription('Chance of rain/snow', precipprob, precip, precipcover);
+        return rainDetails;
+    }
+
+    if (precipType.length > 0 && (precipType.includes('rain') && precipType.includes('freezingrain'))) {
+        const rainCondition = rainDetails;
+        const hasIceHazard = "⚠️ Caution: Sleet.";
+        const completeRainCondition = `${rainCondition} ${hasIceHazard}`;
+        return completeRainCondition;
+    }
+}
+
+function rainDescription(chanceOfText, precipprob, precip, precipcover) {
+    if (precip < 0.25) return `${chanceOfText}: ${precipprob}%. Light but ${moreRainInfo(precipcover)}.`;
+    if (precip < 0.80) return `${chanceOfText}: ${precipprob}%. Moderate downpour - ${moreRainInfo(precipcover)}; you may need an umbrella.`;
+    if (precip < 2.00) return `${chanceOfText}: ${precipprob}%. Strong downpour; heavy puddles and low visibility.`;
+    if (precip >= 2.00) return `${chanceOfText}: ${precipprob}%. Intense storm-level rain with flooding risk.`;
 }
 
 function moreRainInfo(precipcover) {
@@ -248,25 +274,82 @@ function moreRainInfo(precipcover) {
     if (precipcover >= 50.00) return "widespread, prolonged rain for much of the day"
 }
 
-function addtlRainDetails(precipprob, precip, precipcover, windspeed, windgust) {
+function addtlRainDetails(preciptype, precipprob, precip, precipcover) {
     const addtlRainInfo = document.createElement("div");
     addtlRainInfo.className = "addtl-rain-info";
 
     const rainIconContainer = document.createElement("div");
     rainIconContainer.className = "rain-icon-container";
 
-    const rainIcon = document.createElement("img");
-    rainIcon.src = umbrellaIconImage;
-
-    rainIconContainer.append(rainIcon);
-
     const rainDetails = document.createElement("p");
     rainDetails.className = "rain-description";
-    rainDetails.textContent = rainDescription(precipprob, precip, precipcover, windspeed, windgust);
+    rainDetails.textContent = completeRainDescription(preciptype, precipprob, precip, precipcover);
 
+    if (rainDetails.textContent !== "") {
+        const rainIcon = document.createElement("img");
+        rainIcon.src = umbrellaIconImage;
+
+        rainIconContainer.append(rainIcon);
+    } 
+    
     addtlRainInfo.append(rainIconContainer, rainDetails);
 
     return addtlRainInfo;
+}
+
+function snowDescription(preciptype, precipprob, snow, snowdepth) {
+    const precipType = preciptype || [];
+    
+    if (precipType.length === 1 && precipType.includes('snow')) {
+        return `Chance of snow: ${precipprob}%. ${moreSnowInfo(snow)} with depth of snow on ground: ${snowdepth} inches.`; 
+    }
+
+    if (precipType.length > 0 && (precipType.includes('rain') && precipType.includes('snow'))) {
+        return `${moreSnowInfo(snow)} with depth of snow on ground: ${snowdepth} inches.`;
+    }
+
+    if (precipType.length > 0 && (precipType.includes('snow') && precipType.includes('ice'))) {
+        const snowCondition = `Chance of snow: ${precipprob}%. ${moreSnowInfo(snow)} with depth of snow on ground: ${snowdepth} inches.`;
+        const hasIceHazard = "⚠️ Caution: Icy conditions.";
+        const completeSnowCondition = `${snowCondition} ${hasIceHazard}`;
+        return completeSnowCondition;
+    }
+
+    if (snow < 0.1 && snowdepth >= 1.0) {
+        return `Depth of snow on ground: ${snowdepth} inches due to lingering snowpack.`;
+    }
+}
+
+function moreSnowInfo(snow) {
+    if (snow >= 0.1 && snow < 0.5) return `Flurries / trace snow, light dusting on grass and rooftops,`;
+    if (snow < 2.0) return `Light snow,`;
+    if (snow < 4.0) return `Proceed with caution, a noticeable accumulation on roads,`;
+    if (snow < 8.0) return `Alarming / Heavy,`
+    if (snow >= 8.0) return `Severe / Major storm,`
+}
+
+function showSnowDetails(preciptype, precipprob, snow, snowdepth) {
+    const snowDetails = document.createElement("div");
+    snowDetails.className = "snow-details";
+
+    const snowIconContainer = document.createElement("div");
+    snowIconContainer.className = "snow-icon-container";
+
+    const snowDetailsDescription = document.createElement("p");
+    snowDetailsDescription.className = "snow-details-description";
+
+    snowDetailsDescription.textContent = snowDescription(preciptype, precipprob, snow, snowdepth);
+
+    if (snowDetailsDescription.textContent !== "") {
+        const snowIcon = document.createElement("img");
+        snowIcon.src = snowHatIcon;
+
+        snowIconContainer.append(snowIcon);
+    }
+
+    snowDetails.append(snowIconContainer, snowDetailsDescription);
+
+    return snowDetails;
 }
 
 showForecast.addEventListener('change', async function(event) {
@@ -297,7 +380,6 @@ showForecast.addEventListener('change', async function(event) {
         if (selectedValue === "next10days") {
             await displayForecast(selectedValue, 10);
         }
-        
     }
 });
 
