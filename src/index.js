@@ -245,12 +245,14 @@ function addtlTempDetails(heatIndex, humidity, dewInF) {
 function completeRainDescription(preciptype, precipprob, precip, precipcover) {
     const precipType = preciptype || [];
     let rainDetails = rainDescription('Chance of rain', precipprob, precip, precipcover);
-    if (precip === 0.00 || precipprob === 0) return "No rain today.";
+    
+    if (precip === 0.00 && precipprob === 0) return "No rain today.";
+    
     if (precipType.length === 1 && preciptype.includes('rain')) {
         return rainDetails;
     }
 
-    if (precipType.length > 0 && (preciptype.includes('rain') && preciptype.includes('snow'))) {
+    if (precipType.length > 0 && ((preciptype.includes('rain') || preciptype.includes('freezingrain')) && preciptype.includes('snow'))) {
         rainDetails = rainDescription('Chance of rain/snow', precipprob, precip, precipcover);
         return rainDetails;
     }
@@ -261,17 +263,19 @@ function completeRainDescription(preciptype, precipprob, precip, precipcover) {
         const completeRainCondition = `${rainCondition} ${hasIceHazard}`;
         return completeRainCondition;
     }
+
+    return rainDetails;
 }
 
 function rainDescription(chanceOfText, precipprob, precip, precipcover) {
-    if (precip < 0.25) return `${chanceOfText}: ${precipprob}%. Light but ${moreRainInfo(precipcover)}.`;
-    if (precip < 0.80) return `${chanceOfText}: ${precipprob}%. Moderate downpour - ${moreRainInfo(precipcover)}; you may need an umbrella.`;
+    if (precip < 0.25) return `${chanceOfText}: ${precipprob}%. Light rain showers; ${moreRainInfo(precipcover)}.`;
+    if (precip < 0.80) return `${chanceOfText}: ${precipprob}%. Moderate downpour; ${moreRainInfo(precipcover)}; you may need an umbrella.`;
     if (precip < 2.00) return `${chanceOfText}: ${precipprob}%. Strong downpour; heavy puddles and low visibility.`;
     if (precip >= 2.00) return `${chanceOfText}: ${precipprob}%. Intense storm-level rain with flooding risk.`;
 }
 
 function moreRainInfo(precipcover) {
-    if (precipcover <= 12.50) return "brief, isolated rain showers - quick then clearing";
+    if (precipcover <= 12.50) return "brief, isolated - quick then clearing";
     if (precipcover <= 25.00) return "intermittent rain showers across several hours of the day";
     if (precipcover < 50.00) return "frequent, recurring rain showers throughout much of the day"; 
     if (precipcover >= 50.00) return "widespread, prolonged rain for much of the day"
@@ -305,7 +309,9 @@ function snowDescription(preciptype, precipprob, snow, snowdepth) {
     
     let snowCondition = `Chance of snow: ${precipprob}%. ${moreSnowInfo(snow)} Snow accumulation on ground: ${snowdepth} inches.`;
     if (precipType.length === 1 && precipType.includes('snow')) {
-        return snowCondition;
+        if (precipprob > 0) {
+            return snowCondition;
+        }
     }
 
     if (precipType.length > 0 && (precipType.includes('rain') && precipType.includes('snow'))) {
@@ -328,7 +334,7 @@ function snowDescription(preciptype, precipprob, snow, snowdepth) {
 function moreSnowInfo(snow) {
     if (snow >= 0.1 && snow < 0.5) return `Flurries / trace snow, light dusting on grass and rooftops.`;
     if (snow < 2.0) return `Light snow.`;
-    if (snow < 4.0) return `Proceed with caution, a noticeable accumulation on roads.`;
+    if (snow < 4.0) return `A noticeable accumulation on roads, proceed with caution.`;
     if (snow < 8.0) return `Alarming / Heavy.`
     if (snow >= 8.0) return `Severe / Major storm.`
 }
@@ -359,31 +365,31 @@ function showSnowDetails(preciptype, precipprob, snow, snowdepth) {
 
 function windGustTropicalClime(windgust) {
     /*this is in mph*/
-    if (windgust < 25) return 'Normal gust.';
-    if (windgust < 39) return 'Proceed with caution; noticeable crosswinds.';
-    if (windgust < 58) return 'Alarming / High Alert ⚠️ Driving can be hazardous.';
-    if (windgust >= 58) return 'Severe / Dangerous ⚠️';
+    if (windgust < 25) return 'normal gust.';
+    if (windgust < 39) return 'proceed with caution; noticeable crosswinds.';
+    if (windgust < 58) return 'alarming / high alert ⚠️ Driving can be hazardous.';
+    if (windgust >= 58) return 'severe / dangerous ⚠️';
 }
 
 function windGustCoolClime(windgust) {
     /*this is in mph*/
-    if (windgust < 13) return 'This means, wind is crisp and brisk.';
-    if (windgust < 25) return 'This means, wind is chilly and drafty; you will want a wind-resistant jacket.';
-    if (windgust >= 25) return 'This means, wind is raw and blustery.';
+    if (windgust < 13) return 'wind is crisp and brisk.';
+    if (windgust < 25) return 'wind is chilly and drafty.';
+    if (windgust >= 25) return 'wind is raw and blustery.';
 }
 
 function windGustColdClime(windgust) {
     /*this is in mph*/
-    if (windgust < 11) return 'This means, wind is still and crisp (manageable cold).';
-    if (windgust < 21) return 'This means, wind is biting / chilly.';
-    if (windgust < 31) return 'This means, wind is piercing / bitter.';
-    if (windgust >= 31) return 'Alarming / Dangerous ⚠️';
+    if (windgust < 11) return 'wind is still and crisp (manageable cold).';
+    if (windgust < 21) return 'wind is biting / chilly.';
+    if (windgust < 31) return 'wind is piercing / bitter.';
+    if (windgust >= 31) return 'alarming / dangerous ⚠️';
 }
 
 function windGustDescription(temp, windspeed, windgust) {
     const windspeedkmh = windspeed * 1.60934;
     const windgustkmh = windgust * 1.60934;
-    const windNumbersDescription = `Wind speed is at ${windspeed} mph / ${windspeedkmh.toFixed(1)} kmh with gustiness of ${windgust} mph / ${windgustkmh.toFixed(1)} kmh.`;
+    const windNumbersDescription = `Wind speed is at ${windspeed} mph / ${windspeedkmh.toFixed(1)} kmh with gustiness of ${windgust} mph / ${windgustkmh.toFixed(1)} kmh - `;
     if (temp > 50) {
         const windDescription = windGustTropicalClime(windgust);
         return `${windNumbersDescription} ${windDescription}`;
@@ -458,9 +464,9 @@ const getFutureWeather = async(selectedValue, city) => {
     let url = "";
 
     if (selectedValue === "tomorrow")  {
-        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next1days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
+        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/next1days?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,precip,preciptype,precipcover,conditions,description,snow`;
     } else {
-        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/${selectedValue}?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,conditions,description`;
+        url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}/${selectedValue}?unitGroup=us&include=day&elements=datetime,temp,feelslikemax,precipprob,precip,preciptype,precipcover,conditions,description,snow`;
     }
     
     const response = await fetch(url);
@@ -477,8 +483,12 @@ const getFutureWeather = async(selectedValue, city) => {
             temp: day.temp,
             feelslikemax: day.feelslikemax,
             precipprob: day.precipprob,
+            precip: day.precip,
+            preciptype: day.preciptype,
+            precipcover: day.precipcover,
             conditions: day.conditions,
             description: day.description,
+            snow: day.snow,
         }
     });
 
@@ -523,10 +533,31 @@ async function displayForecast(selectedValue, numberOfDays) {
 
         const chanceOfRainText = document.createElement("p");
         chanceOfRainText.className = "chance-of-rain";
-        const chanceOfRain = weather.forecast[i].precipprob;
-        chanceOfRainText.textContent = `Chance of rain: ${chanceOfRain}%`;
 
-        dayContainer.append(forecastDateText, weatherIconContainer, tempText, forecastDesc, heatIndexText, chanceOfRainText);
+        const snowText = document.createElement('p');
+        snowText.className = "snow-text";
+        
+        const chanceOfRain = weather.forecast[i].precipprob;
+        const rain = weather.forecast[i].precip;
+        const hoursOfRain = weather.forecast[i].precipcover;
+        const precipType = weather.forecast[i].preciptype;
+        const kindOfPrecip = precipType || [];
+        const snow = weather.forecast[i].snow;
+
+        const rainSummary = displayDailyForecastRain(precipType, chanceOfRain, rain, hoursOfRain);
+
+        if (kindOfPrecip.includes('snow') || snow > 0) {
+            /*chanceOfRainText.textContent = `Chance of rain/snow: ${chanceOfRain}%. ${rainSummary}`;*/
+            chanceOfRainText.textContent = rainSummary;
+            
+            const snowDescription = displayDailyForecastSnow(kindOfPrecip, snow);
+            snowText.textContent = `Snow: ${snowDescription}`;
+
+        } else {
+                chanceOfRainText.textContent = rainSummary;
+            }
+
+        dayContainer.append(forecastDateText, weatherIconContainer, tempText, forecastDesc, heatIndexText, chanceOfRainText, snowText);
 
         forecastsContainer.append(dayContainer);
     }
@@ -552,9 +583,61 @@ function displayDailyForecastHeat(heatIndex) {
     if (heatIndexFullDesc.includes(';') || heatIndexFullDesc.includes('.')) {
         heatIndexSummary = `${heatIndexFullDesc.split(';')[0]}`;
     }
+    
     heatIndexText.textContent = `Heat Index: ${heatIndexInF}°F / ${heatIndexInC}°C. ${heatIndexSummary}`;
 
     return heatIndexText;
+}
+
+function displayDailyForecastRain(preciptype, precipprob, precip, precipcover) {
+    let rainSummary = "";
+    const kindOfPrecip = preciptype || [];
+    const rainFullDesc = completeRainDescription(preciptype, precipprob, precip, precipcover);
+    const isRainHazard = "⚠️ Caution: Sleet.";
+
+    if (precip === 0.00 && precipprob === 0) {
+        rainSummary = "No rain on this day.";
+    } else {
+        if (rainFullDesc.includes(';')) {
+            if (kindOfPrecip.includes('freezingrain')) {
+                rainSummary = `${rainFullDesc.split(';')[0]}. ${isRainHazard}`;
+            } else {
+                rainSummary = `${rainFullDesc.split(';')[0]}.`;
+            }
+        } else {
+            if (kindOfPrecip.includes('freezingrain')) {
+                rainSummary = `${rainFullDesc} ${isRainHazard}`;
+            } else {
+                rainSummary = rainFullDesc;
+            }
+        }
+    }
+
+    return rainSummary;
+}
+
+function displayDailyForecastSnow(preciptype, snow) {
+    let snowSummary = "";
+    const kindOfPrecip = preciptype || [];
+    const hasIceHazard = "⚠️ Caution: Icy conditions.";
+    const snowFullDesc = moreSnowInfo(snow);
+    /*if (snow > 0) {*/
+        if (snowFullDesc.includes(',')) {
+            if (kindOfPrecip.includes('ice')) {
+                snowSummary = `${snowFullDesc.split(',')[0]} ${hasIceHazard}`;
+            } else {
+                snowSummary = snowFullDesc.split(',')[0];
+            }
+        } else {
+            if (kindOfPrecip.includes('ice')) {
+                snowSummary = `${snowFullDesc} ${hasIceHazard}`;
+            } else {
+                snowSummary = snowFullDesc;
+            }
+        }
+    /*}*/
+    
+    return snowSummary;
 }
 
 hideForecast.addEventListener('click', (event) => {
