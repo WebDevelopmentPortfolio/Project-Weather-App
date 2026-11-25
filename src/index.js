@@ -7,6 +7,7 @@ import stormIcon from "./images/day-cloud-rain-lightning-color-icon.png";
 import tempIconImage from "./images/medium-temperature-icon.png";
 import umbrellaIconImage from "./images/umbrella-color-icon.png";
 import snowHatIcon from "./images/christmas-santa-cap-color-icon.png";
+import windIcon from "./images/windmill.png";
 
 const defaultItems = document.querySelector(".default-items");
 const formSearch = document.getElementById("search");
@@ -96,7 +97,7 @@ const getWeatherToday = async (city) => {
     }
 };
 
-function displayWeatherToday(enteredCity, dateToday, tempInF, description, humidity, heatIndex, dewInF, preciptype, precipprob, precip, precipcover, snow, snowdepth) {
+function displayWeatherToday(enteredCity, dateToday, tempInF, description, humidity, heatIndex, dewInF, preciptype, precipprob, precip, precipcover, snow, snowdepth, windspeed, windgust) {
     weatherInfoToday.replaceChildren();
 
     const city = document.createElement("p");
@@ -130,7 +131,9 @@ function displayWeatherToday(enteredCity, dateToday, tempInF, description, humid
 
     const snowInfo = showSnowDetails(preciptype, precipprob, snow, snowdepth);
 
-    weatherInfoToday.append(city, dateNow, weatherIconContainer, temp, overall, addtlTempInfo, addtlRainInfo, snowInfo);
+    const windInfo = showWindDescription(tempInF, windspeed, windgust);
+
+    weatherInfoToday.append(city, dateNow, weatherIconContainer, temp, overall, addtlTempInfo, addtlRainInfo, snowInfo, windInfo);
 }
 
 async function displayWeatherInfo(enteredCity) {
@@ -153,10 +156,10 @@ async function displayWeatherInfo(enteredCity) {
     const hoursOfRain = weatherToday.forecast[0].precipcover;
     const snow = weatherToday.forecast[0].snow;
     const snowdepth = weatherToday.forecast[0].snowdepth;
-    const windSpeed = weatherToday.forecast[0].windspeed;
-    const windGust = weatherToday.forecast[0].windgust;
+    const windspeed = weatherToday.forecast[0].windspeed;
+    const windgust = weatherToday.forecast[0].windgust;
     
-    displayWeatherToday(weatherToday.city, dateToday, weatherTodayTemp, description, humidity, heatIndex, dew, preciptype, chanceOfRain, rain, hoursOfRain, snow, snowdepth);
+    displayWeatherToday(weatherToday.city, dateToday, weatherTodayTemp, description, humidity, heatIndex, dew, preciptype, chanceOfRain, rain, hoursOfRain, snow, snowdepth, windspeed, windgust);
     
     console.clear();
     console.log(weatherToday);
@@ -300,32 +303,34 @@ function addtlRainDetails(preciptype, precipprob, precip, precipcover) {
 function snowDescription(preciptype, precipprob, snow, snowdepth) {
     const precipType = preciptype || [];
     
+    let snowCondition = `Chance of snow: ${precipprob}%. ${moreSnowInfo(snow)} Snow accumulation on ground: ${snowdepth} inches.`;
     if (precipType.length === 1 && precipType.includes('snow')) {
-        return `Chance of snow: ${precipprob}%. ${moreSnowInfo(snow)} with depth of snow on ground: ${snowdepth} inches.`; 
+        return snowCondition;
     }
 
     if (precipType.length > 0 && (precipType.includes('rain') && precipType.includes('snow'))) {
-        return `${moreSnowInfo(snow)} with depth of snow on ground: ${snowdepth} inches.`;
+        snowCondition = `${moreSnowInfo(snow)} Snow accumulation on ground: ${snowdepth} inches.`;
+        return snowCondition;
     }
 
     if (precipType.length > 0 && (precipType.includes('snow') && precipType.includes('ice'))) {
-        const snowCondition = `Chance of snow: ${precipprob}%. ${moreSnowInfo(snow)} with depth of snow on ground: ${snowdepth} inches.`;
         const hasIceHazard = "⚠️ Caution: Icy conditions.";
         const completeSnowCondition = `${snowCondition} ${hasIceHazard}`;
         return completeSnowCondition;
     }
 
     if (snow < 0.1 && snowdepth >= 1.0) {
-        return `Depth of snow on ground: ${snowdepth} inches due to lingering snowpack.`;
+        snowCondition = `Depth of snow on ground: ${snowdepth} inches due to lingering snowpack.`;
+        return snowCondition;
     }
 }
 
 function moreSnowInfo(snow) {
-    if (snow >= 0.1 && snow < 0.5) return `Flurries / trace snow, light dusting on grass and rooftops,`;
-    if (snow < 2.0) return `Light snow,`;
-    if (snow < 4.0) return `Proceed with caution, a noticeable accumulation on roads,`;
-    if (snow < 8.0) return `Alarming / Heavy,`
-    if (snow >= 8.0) return `Severe / Major storm,`
+    if (snow >= 0.1 && snow < 0.5) return `Flurries / trace snow, light dusting on grass and rooftops.`;
+    if (snow < 2.0) return `Light snow.`;
+    if (snow < 4.0) return `Proceed with caution, a noticeable accumulation on roads.`;
+    if (snow < 8.0) return `Alarming / Heavy.`
+    if (snow >= 8.0) return `Severe / Major storm.`
 }
 
 function showSnowDetails(preciptype, precipprob, snow, snowdepth) {
@@ -350,6 +355,72 @@ function showSnowDetails(preciptype, precipprob, snow, snowdepth) {
     snowDetails.append(snowIconContainer, snowDetailsDescription);
 
     return snowDetails;
+}
+
+function windGustTropicalClime(windgust) {
+    /*this is in mph*/
+    if (windgust < 25) return 'Normal gust.';
+    if (windgust < 39) return 'Proceed with caution; noticeable crosswinds.';
+    if (windgust < 58) return 'Alarming / High Alert ⚠️ Driving can be hazardous.';
+    if (windgust >= 58) return 'Severe / Dangerous ⚠️';
+}
+
+function windGustCoolClime(windgust) {
+    /*this is in mph*/
+    if (windgust < 13) return 'This means, wind is crisp and brisk.';
+    if (windgust < 25) return 'This means, wind is chilly and drafty; you will want a wind-resistant jacket.';
+    if (windgust >= 25) return 'This means, wind is raw and blustery.';
+}
+
+function windGustColdClime(windgust) {
+    /*this is in mph*/
+    if (windgust < 11) return 'This means, wind is still and crisp (manageable cold).';
+    if (windgust < 21) return 'This means, wind is biting / chilly.';
+    if (windgust < 31) return 'This means, wind is piercing / bitter.';
+    if (windgust >= 31) return 'Alarming / Dangerous ⚠️';
+}
+
+function windGustDescription(temp, windspeed, windgust) {
+    const windspeedkmh = windspeed * 1.60934;
+    const windgustkmh = windgust * 1.60934;
+    const windNumbersDescription = `Wind speed is at ${windspeed} mph / ${windspeedkmh.toFixed(1)} kmh with gustiness of ${windgust} mph / ${windgustkmh.toFixed(1)} kmh.`;
+    if (temp > 50) {
+        const windDescription = windGustTropicalClime(windgust);
+        return `${windNumbersDescription} ${windDescription}`;
+    }
+
+    if (temp <= 50) {
+        const windDescription = windGustCoolClime(windgust);
+        return `${windNumbersDescription} ${windDescription}`;
+    }
+
+    if (temp <= 32) {
+        const windDescription = windGustColdClime(windgust);
+        return `${windNumbersDescription} ${windDescription}`;
+    }
+}
+
+function showWindDescription(temp, windspeed, windgust) {
+    const windDescContainer = document.createElement("div");
+    windDescContainer.className = "wind-description-container";
+
+    const windIconContainer = document.createElement("div");
+    windIconContainer.className = "wind-icon-container";
+
+    const windDescription = document.createElement("p");
+    windDescription.className = "wind-description";
+    windDescription.textContent = windGustDescription(temp, windspeed, windgust);
+
+    if (windDescription.textContent !== "") {
+        const windImage = document.createElement("img");
+        windImage.src = windIcon;
+
+        windIconContainer.append(windImage);
+    }
+
+    windDescContainer.append(windIconContainer, windDescription);
+
+    return windDescContainer;
 }
 
 showForecast.addEventListener('change', async function(event) {
