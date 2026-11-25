@@ -389,7 +389,7 @@ function windGustColdClime(windgust) {
 function windGustDescription(temp, windspeed, windgust) {
     const windspeedkmh = windspeed * 1.60934;
     const windgustkmh = windgust * 1.60934;
-    const windNumbersDescription = `Wind speed is at ${windspeed} mph / ${windspeedkmh.toFixed(1)} kmh with gustiness of ${windgust} mph / ${windgustkmh.toFixed(1)} kmh - `;
+    const windNumbersDescription = `Wind speed is at ${windspeed} mph / ${windspeedkmh.toFixed(1)} kmph with gustiness of ${windgust} mph / ${windgustkmh.toFixed(1)} kmph - `;
     if (temp > 50) {
         const windDescription = windGustTropicalClime(windgust);
         return `${windNumbersDescription} ${windDescription}`;
