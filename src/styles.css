@@ -313,6 +313,11 @@ button {
     font-weight: bold;
 }
 
+.date-temperature,
+.forecast-description {
+    font-weight: bold;
+}
+
 .footer {
     display: flex;
     flex-direction: column;
